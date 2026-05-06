@@ -179,7 +179,8 @@ docker run --gpus all -v /data:/data crack-reid-ml:latest \
 
 **Master's Thesis:**
 - Institution: Albert-Ludwigs-Universität Freiburg & Fraunhofer IPM
-- Topic: UAV-based Crack Detection and Re-Identification for Infrastructure Monitoring
+- Topic: AI-based Crack Re-Identification for Autonomous UAV Inspection
+of Concrete Structures.
 
 **Key Works:**
 - YOLO11n-seg: https://github.com/ultralytics/ultralytics
