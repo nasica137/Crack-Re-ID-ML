@@ -1,145 +1,101 @@
 # Crack Re-ID ML
 
-A compact, deployable pipeline for UAV-based crack detection and single-shot crack re-identification (Re-ID).
+A compact, deployable pipeline for UAV-based crack detection and single-shot crack re-identification.
 
-This project is a refactored and productionized version of my original research codebase, redesigned for modularity, reproducibility, and end-to-end ML pipeline execution.
-
-It was developed as part of my Master’s thesis at the Albert-Ludwigs-Universität Freiburg and Fraunhofer IPM.
-
----
+This is a refactored research codebase designed for modularity, reproducibility, and production-grade ML pipeline execution. Developed as part of a Master's thesis at Albert-Ludwigs-Universität Freiburg and Fraunhofer IPM.
 
 ## Overview
 
-A single Ultralytics YOLO11n-seg checkpoint is used for both:
+This project unifies crack detection and re-identification in a single, efficient pipeline optimized for UAV infrastructure inspection.
 
-- Crack detection  
-- Instance mask extraction  
+A single YOLO11n-seg checkpoint handles both detection and instance segmentation. Detected cracks are then processed through a Re-ID pipeline that combines visual and geometric features for robust matching.
 
-Detected cracks are then passed into a Re-ID pipeline:
+## Architecture
 
-- Visual embeddings: DINOv2 features from cropped detections  
-- Geometric embeddings: 11-D descriptor from segmentation masks  
-- Matching model: Attention-based similarity network (AttentionSimilarity)  
-- Training strategy: staged triplet-loss schedule with gallery-aware sampling  
+- **Detection & Segmentation**: YOLO11n-seg for unified crack localization
+- **Visual Embedding**: DINOv2 features from cropped detections
+- **Geometric Embedding**: 11-D mask-based shape descriptor
+- **Matching**: Attention-based similarity network with gallery awareness
+- **Training**: Staged triplet-loss schedule with class-balanced sampling
+- **Evaluation**: OSR, mAP_fair, CMC curves (Rank-k retrieval)
 
----
+## Results
 
-## Goal
+### Performance Improvements
 
-Robust, fair, and efficient single-shot crack Re-ID under UAV constraints, evaluated using:
+Baseline (cosine similarity on visual features) vs. Proposed (attention fusion + geometry):
 
-- OSR (Object Success Rate)  
-- mAP_fair (fair mean Average Precision under class imbalance)  
-- CMC curves (Rank-k retrieval performance)
+- Higher OSR (Object Success Rate)
+- Better mAP_fair (fair evaluation under class imbalance)
+- Stronger CMC@1 (top-1 retrieval accuracy)
 
----
-
-## Core Model Stack
-
-- Detection / Segmentation: YOLO11n-seg (Ultralytics)
-- Visual Embedding: DINOv2
-- Geometry Embedding: 11-D mask-based shape descriptor
-- Matching: AttentionSimilarity (gallery-aware fusion model)
-
----
-
-## Key Contributions
-
-- Refactored original research code into a clean modular ML pipeline
-- Unified detection + segmentation into a single YOLO checkpoint
-- Combined visual + geometric feature fusion for Re-ID
-- Replaced cosine matching with attention-based similarity learning
-- Introduced staged triplet training schedule
-- Fully config-driven and reproducible setup
-
----
-
-## Thesis Results Snapshot
-
-### Re-ID Performance (Baseline vs Proposed)
-
-![Re-ID Results Overview](docs/assets/reid_results_overview.svg)
-
-- Baseline: cosine similarity on visual features only  
-- Proposed: attention-based fusion of visual + geometry features  
-
-Key improvements:
-- Higher OSR  
-- Better mAP_fair  
-- Improved CMC@1 accuracy  
-
----
-
-### CMC Curve Comparison (Top-k)
+### CMC Curve Comparison
 
 ![CMC Comparison](docs/assets/cmc_comparison_baseline_vs_schedule.svg)
 
-The proposed model consistently outperforms the baseline across all ranks, especially in early retrieval (top-1 to top-10).
+The proposed model consistently outperforms the baseline across all ranks.
 
----
-
-### Qualitative Re-ID Example (Top-3 Retrieval)
+### Qualitative Example
 
 ![Top-k Matching Example](docs/assets/topk_success_1_top3_concat_feature_attention_similarity.png)
 
-Shows improved ranking stability using fused visual + geometric attention-based similarity.
-
----
-
-## Pipeline Flow
-
-Detection → Cropping → Feature Extraction → Re-ID Matching → Evaluation
-
-Steps:
-
-1. Train YOLO11n-seg crack detector  
-2. Build Re-ID dataset (query/gallery generation)  
-3. Extract embeddings (DINOv2 + geometry descriptors)  
-4. Train AttentionSimilarity matcher  
-5. Evaluate using OSR / mAP / CMC  
-
----
+Improved ranking stability using fused visual and geometric attention-based similarity.
 
 ## Project Structure
 
+```
 crack-reid-ml/
-
 ├── src/
-│   ├── detection/
-│   ├── reid/
-│   ├── data/
-│   ├── evaluation/
-│   └── utils/
+│   ├── detection/        # YOLO-based detection pipeline
+│   ├── reid/             # Re-ID matching and similarity models
+│   ├── data/             # Dataset utilities and loaders
+│   ├── evaluation/       # Metrics (CMC, mAP, OSR)
+│   └── utils/            # Common utilities
 │
 ├── scripts/
-│   ├── train_detection.py
-│   ├── build_reid_dataset.py
-│   ├── train_reid.py
-│   ├── evaluate_reid.py
-│   ├── train_pipeline.py
-│   └── generate_readme_svgs.py
+│   ├── train_detection.py      # YOLO11n-seg training
+│   ├── build_reid_dataset.py   # Query/gallery generation
+│   ├── train_reid.py           # AttentionSimilarity training
+│   ├── evaluate_reid.py        # Evaluation and visualization
+│   ├── train_pipeline.py       # End-to-end orchestration
+│   └── generate_readme_svgs.py # Figure generation
 │
 ├── configs/
-│   └── default.yaml
+│   └── default.yaml      # All hyperparameters and paths
 │
-├── docs/assets/
-├── Dockerfile
-├── requirements.txt
-├── crack-seg.yaml
+├── docs/assets/          # Figures and visualizations
+├── Dockerfile            # Container image
+├── requirements.txt      # Dependencies
+├── crack-seg.yaml        # YOLO dataset config
 └── README.md
+```
 
----
+## Getting Started
 
-## Quick Start
+### Installation
 
+```bash
 pip install -r requirements.txt
+```
 
+### Running the Full Pipeline
+
+```bash
 python scripts/train_pipeline.py --config configs/default.yaml
+```
 
----
+This executes all stages:
+1. Train YOLO11n-seg detector
+2. Build Re-ID dataset (query/gallery)
+3. Extract embeddings (DINOv2 and geometry)
+4. Train AttentionSimilarity matcher
+5. Evaluate and generate reports
 
-## Stage-wise Execution
+### Stage-wise Execution
 
+You can skip specific stages as needed:
+
+```bash
 # Skip detection training
 python scripts/train_pipeline.py --config configs/default.yaml --skip_detection
 
@@ -148,38 +104,92 @@ python scripts/train_pipeline.py --config configs/default.yaml --skip_dataset
 
 # Skip Re-ID training
 python scripts/train_pipeline.py --config configs/default.yaml --skip_reid
-
----
+```
 
 ## Evaluation
 
+Generate evaluation metrics and visualizations:
+
+```bash
 python scripts/evaluate_reid.py \
   --config configs/default.yaml \
   --use_attention
+```
 
-Outputs:
-- CMC curves
-- mAP scores
-- OSR metrics
-- Retrieval visualizations
+Output includes:
+- CMC (Cumulative Matching Characteristic) curves
+- mAP (mean Average Precision) scores
+- OSR (Object Success Rate) metrics
+- Top-k retrieval visualizations
 
----
+## Configuration
+
+All training parameters are defined in `configs/default.yaml`. Before running:
+
+1. Update dataset paths:
+   ```yaml
+   paths:
+     dataset_root: "/path/to/your/dataset"
+     output_dir: "./outputs"
+   ```
+
+2. Edit `crack-seg.yaml` with your dataset directory structure
+
+3. Set the device (GPU/CPU):
+   ```yaml
+   device: "cuda:0"  # or "cpu"
+   ```
+
+## Key Contributions
+
+1. Unified architecture with single YOLO checkpoint for detection and segmentation
+2. Combined visual (DINOv2) and geometric (mask descriptor) embeddings
+3. Attention-based matching replacing static cosine distance
+4. Staged triplet training with gallery-aware sampling
+5. Full modularity with configuration-driven pipeline
+6. Reproducible setup with deterministic training
+
+## Dependencies
+
+- Python 3.8+
+- PyTorch 2.0+
+- Ultralytics (YOLO11)
+- timm (DINOv2)
+- scikit-learn, numpy, scipy
+- OpenCV, Pillow
+
+See `requirements.txt` for pinned versions.
+
+## Docker Deployment
+
+```bash
+docker build -t crack-reid-ml:latest .
+docker run --gpus all -v /data:/data crack-reid-ml:latest \
+  python scripts/train_pipeline.py --config configs/default.yaml
+```
 
 ## Reproducibility
 
-- All parameters defined in configs/default.yaml  
-- Fixed seed ensures deterministic runs  
-- No hardcoded paths  
-- Regenerate figures:
+- Fixed seed ensures deterministic runs
+- No hardcoded paths (configuration-driven)
+- Version-pinned dependencies
+- Regenerate figures: `python scripts/generate_readme_svgs.py`
 
-python scripts/generate_readme_svgs.py
+## References
 
----
+**Master's Thesis:**
+- Institution: Albert-Ludwigs-Universität Freiburg & Fraunhofer IPM
+- Topic: UAV-based Crack Detection and Re-Identification for Infrastructure Monitoring
 
-## Notes
+**Key Works:**
+- YOLO11n-seg: https://github.com/ultralytics/ultralytics
+- DINOv2: https://dinov2.metaai.com/
+- Triplet Loss and CMC evaluation: Reid community standards
 
-- Update dataset and checkpoint paths in configs/default.yaml  
-- crack-seg.yaml defines YOLO dataset config  
-- Designed for UAV infrastructure inspection
+## License
 
----
+This project is provided as-is for research and educational purposes.
+
+## Author
+
+Developed as part of a Master's thesis in collaboration with Albert-Ludwigs-Universität Freiburg and Fraunhofer IPM (Institute for Physical Measurement Technology).
