@@ -184,7 +184,7 @@ of Concrete Structures.
 
 **Key Works:**
 - YOLO11n-seg: https://github.com/ultralytics/ultralytics
-- DINOv2: https://dinov2.metaai.com/
+- DINOv2: https://github.com/facebookresearch/dinov2
 - Triplet Loss and CMC evaluation: Reid community standards
 
 ## License
