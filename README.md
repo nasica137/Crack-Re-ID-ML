@@ -25,7 +25,7 @@ The following visuals are generated from the experiment outputs used in my thesi
 - `mAP_fair`: mean Average Precision computed fairly across identities/classes to reduce bias from class frequency imbalance.
 - `CMC@1`: Cumulative Matching Characteristic at rank 1; probability that the correct identity appears in the first retrieved match.
 
-### CMC Curve Comparison (Top-20)
+### CMC Curve Comparison (Top-50)
 
 ![CMC Comparison Top-20](docs/assets/cmc_comparison_baseline_vs_schedule.svg)
 
@@ -33,11 +33,7 @@ The following visuals are generated from the experiment outputs used in my thesi
 
 ### Qualitative Re-ID Example (Top-k Matching)
 
-<!-- Replace this file with your own qualitative example image -->
 ![Top-k Matching Qualitative Result](docs/assets/topk_success_1_top3_concat_feature_attention_similarity.png)
-
-- Suggested content: query crop, top-1..top-k retrieved gallery crops, and GT highlight.
-- Current file path: `docs/assets/topk_success_1_top3_concat_feature_attention_similarity.png`
 
 ## Project Structure
 
