@@ -1,0 +1,44 @@
+seed: 42
+
+paths:
+  train:
+    images: "/workspace/train/images"
+    labels: "/workspace/train/labels"
+  valid:
+    images: "/workspace/valid/images"
+    labels: "/workspace/valid/labels"
+  test:
+    images: "/workspace/test/images"
+    labels: "/workspace/test/labels"
+  reid_output_dir: "/workspace/runs/reid_data"
+
+detection:
+  model: "yolo11n-seg.pt"
+  data_yaml: "crack-seg.yaml"
+  epochs: 200
+  imgsz: 640
+  batch_size: 32
+  lr: 0.001
+  optimizer: "AdamW"
+  output_dir: "/workspace/runs/detection"
+  run_name: "crack_seg_baseline"
+
+data:
+  augmentation:
+    max_angle_deg: 30
+    brightness_jitter: 0.2
+
+reid:
+  dino_model: "facebook/dinov2-base"
+  segmentation_weights: "/workspace/runs/detection/crack_seg_baseline/weights/best.pt"
+  detection_weights: "/workspace/runs/detection/crack_seg_baseline/weights/best.pt"
+  det_conf: 0.4
+  attention:
+    hidden_dim: 512
+    temperature: 0.1
+    lr: 0.0001
+    epochs: 50
+    checkpoint: "/workspace/runs/reid/attention_similarity.pt"
+
+evaluation:
+  output_dir: "/workspace/runs/evaluation"
